@@ -1,0 +1,7 @@
+{
+  "token_api": "1234567890:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "server_host": "127.0.0.1",
+  "server_port": "80",
+  "webhook_url": "https://empty.com",
+  "webhook_path": "namePathWebhook"
+}
