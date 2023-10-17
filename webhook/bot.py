@@ -13,24 +13,28 @@ from aiogram.types import Message
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 from aiogram.utils.markdown import hbold
 
-# заполни empty_setting
-# переименуй empty_setting -> setting
-with open('setting.json', 'r') as data:
-    json_data = json.load(data)
+"""
+используется веб-перехватчик позади любого обратного прокси-сервера (nginx, traefik, ingress etc.).
+я использую ngrok для тестов.
+"""
 
-# Токен бота можно получить здесь: https://t.me/BotFather
-TOKEN = str(json_data['token_api'])
+"""
+                                            Настройки сервера.
+Привязывайте локальный хост только для предотвращения внешнего доступа:
+- token_api: можно получить здесь: https://t.me/BotFather.
+- server_host.
+- server_port: Порт для входящего запроса от обратного прокси. Должен быть любой доступный порт.
+- webhook_url: Путь к маршруту веб-хука, по которому Telegram будет отправлять запросы.
+- webhook_path: часть пути, на который мы будем принимать запросы.
+"""
 
-# Настройки сервера
-# привязывайте локальный хост только для предотвращения внешнего доступа
-WEB_SERVER_HOST = str(json_data['server_host'])
-# Порт для входящего запроса от обратного прокси. Должен быть любой доступный порт
-WEB_SERVER_PORT = int(json_data['server_port'])
-# Путь к маршруту веб-хука, по которому Telegram будет отправлять запросы
-WEBHOOK_PATH = '/' + str(json_data['webhook_path'])
-# Базовый URL-адрес веб-перехватчика будет использоваться для создания URL-адреса веб-перехватчика для Telegram,
-# Здесь используется публичный DNS с поддержкой HTTPS
-BASE_WEBHOOK_URL = str(json_data['webhook_url'])
+token_api = "6681065695:AAEtF-jrIbc3vg5R8oY8mMSsOfv1WrQgVTY"
+server_host = "127.0.0.1"
+server_port = "80"
+webhook_url = "https://7e48-85-235-53-178.ngrok-free.app"
+webhook_path = "/AAEH6e3jQjx_b2zNjjc9zj95Ioi6LgKFq"
+support_chat_id = "-1001980897946"
+os = "windows"
 
 # Все обработчики должны быть прикреплены к Маршрутизатору (или Диспетчеру)
 router = Router()
@@ -47,7 +51,7 @@ async def command_start_handler(message: Message) -> None:
 async def on_startup(bot: Bot) -> None:
     # Если у вас есть самоподписанный сертификат SSL, вам нужно будет отправить публичный
     # сертификат в Telegram
-    await bot.set_webhook(f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}")
+    await bot.set_webhook(f"{webhook_url}{webhook_path}")
 
 
 def main() -> None:
@@ -62,7 +66,7 @@ def main() -> None:
     dp.startup.register(on_startup)
 
     # Инициализируйте экземпляр бота с режимом анализа по умолчанию, который будет передаваться всем вызовам API.
-    bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
+    bot = Bot(token_api, parse_mode=ParseMode.HTML)
 
     # Создайте экземпляр aiohttp.web.Application.
     app = web.Application()
@@ -75,13 +79,13 @@ def main() -> None:
         bot=bot,
     )
     # Регистрация обработчика веб-перехватчика в приложении
-    webhook_requests_handler.register(app, path=WEBHOOK_PATH)
+    webhook_requests_handler.register(app, path=webhook_path)
 
     # Подключение диспетчера запуск и завершения работы приложения aiohttp.
     setup_application(app, dp, bot=bot)
 
     # запускаем веб-сервер
-    web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
+    web.run_app(app, port=server_port)
 
 
 if __name__ == "__main__":
